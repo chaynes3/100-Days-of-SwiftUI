@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  WordScramble
 //
-//  100 Days of SwiftUI --> Day 29 (Project 5, Part 1)
+//  100 Days of SwiftUI --> Day 29-31 (Project 5)
 //
 //  Created by Christopher Haynes on 1/4/22.
 //
@@ -10,52 +10,59 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    // Variables needed for game
+    @State private var usedWords = [String]()
+    @State private var rootWord = ""
+    @State private var newWord = ""
+    
     var body: some View {
-        Text("Hello, world!")
-            .padding()
-    }
-    
-    
-    // Really just a placeholder function to load in a file from our App bundle
-    // URL: https://www.hackingwithswift.com/books/ios-swiftui/loading-resources-from-your-app-bundle
-    func loadFile() {
-        // Try and pull the file URL from our app bundle on the user's device
-        if let fileURL = Bundle.main.url(forResource: "sime-file", withExtension: "txt") {
-            
-            // If here, the file was found on the user device's app bundle
-            if let fileContents = try? String(contentsOf: fileURL) {
-                
-                // If here, we loaded the file into the string (fileContents is now a string loaded from the file)
+        NavigationView {
+            List {
+                Section("User Input/Controls") {
+                    TextField("Enter a word: ", text: $newWord)
+                        .autocapitalization(.none)
+                    Button("Clear Used Words") {
+                        usedWords.removeAll()
+                    }
+                }
+                Section("Used Words") {
+                    // No duplicates, so (id: \.self) is used here for now [will learn better way soon]
+                    ForEach(usedWords, id: \.self) { word in
+                        HStack {
+                            Image(systemName: "\(word.count).circle")
+                            Text(word)
+                        }
+                    }
+                }
             }
+            .navigationTitle("\(rootWord)")
+            .onSubmit(addNewWord)
         }
     }
     
-    
-    // Working with strings!
-    // URL: https://www.hackingwithswift.com/books/ios-swiftui/working-with-strings
-    func test() {
-        let input = """
-                    a
-                    b
-                    c
-                    """
-        let letters = input.components(separatedBy: "\n")
-        let letter = letters.randomElement()
-        let trimmed = letter?.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
-    
-    // ...still working with strings :)
-    // URL: https://www.hackingwithswift.com/books/ios-swiftui/working-with-strings
-    func checkSpelling() {
+    func addNewWord() {
+        // 1. Lowercase newWord and remove any whitespace
+        // 2. Check if atleast 1 char, else exit
+        let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard newWord.count > 0 else { return }
         
-        let word = "swift"
-        let checker = UITextChecker() // Comes from UIKit (& therefore Obj-C)
-        let range = NSRange(location: 0, length: word.utf16.count)
-        let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
-        let allGood = misspelledRange.location == NSNotFound // (Obj-C quirk; returns bool based on NSNotFound)
+        // Extra validation here (to be added later)
+        
+        
+        // 3. Insert answer at position 0 in usedWords arrray, then reset newWord back to empty string
+        withAnimation { usedWords.insert(answer, at: 0) }
+        newWord = ""
     }
+
 }
+
+
+/*
+    NOTES:
+    1. Look up the keyword 'guard' as a refresher -> I don't understand how it is being used inside addNewWord()
+    2.
+*/
 
 
 
