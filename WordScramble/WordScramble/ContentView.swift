@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var usedWords = [String]()
     @State private var rootWord = ""
     @State private var newWord = ""
+    @State private var wordLetterLimit = 3
+    @State private var userScore = 0
     
     // Variables to make showing errors easier
     @State private var errorTitle = ""
@@ -27,7 +29,14 @@ struct ContentView: View {
                 Section("User Input/Controls") {
                     TextField("Enter a word: ", text: $newWord)
                         .autocapitalization(.none)
+                }
+                Section("User Score") {
+                    Text("\(userScore)")
+                }
+                Section("Clear List Below") {
+                    // Basically starts a new game but doesn't change the root word
                     Button("Clear Used Words") {
+                        userScore = 0
                         usedWords.removeAll()
                     }
                 }
@@ -50,6 +59,12 @@ struct ContentView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
+            }
+            .toolbar {
+                Button("New Game") {
+                    usedWords.removeAll()
+                    startGame()
+                }
             }
         }
     }
@@ -77,7 +92,20 @@ struct ContentView: View {
             return
         }
         
-        // 4. Insert answer at position 0 in usedWords arrray, then reset newWord back to empty string
+        guard isCorrectLength(word: answer) else {
+            wordError(title: "Not Enough Letters", message: "Your word must be equal to or greater than 3 letters!")
+            return
+        }
+        
+        guard isNotPrimary(word: answer) else {
+            wordError(title: "Primary Word Used", message: "You can't use the primary word in its entirety as an input.")
+            return
+        }
+        
+        // 4. Update user score now that input has passed checks
+        calculateScore()
+        
+        // 5. Insert answer at position 0 in usedWords arrray, then reset newWord back to empty string
         withAnimation { usedWords.insert(answer, at: 0) }
         newWord = ""
     }
@@ -85,6 +113,9 @@ struct ContentView: View {
     
     // Loads a word from start.txt in app bundle. See individual comments below for further details.
     func startGame() {
+        // Reset User Score for each word basically
+        userScore = 0
+        
         // 1. Find the URL for start.txt in our app bundle
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
             // 2. Load start.txt into a string
@@ -105,9 +136,15 @@ struct ContentView: View {
     }
     
     
-    // Has user's current input already been submitted? (already exists in usedWords array?)
+    // Has user's current input already been submitted?
     func isOriginal(word: String) -> Bool {
         !usedWords.contains(word)
+    }
+    
+    
+    // Is it the root word?
+    func isNotPrimary(word: String) -> Bool {
+        !(word == rootWord)
     }
     
     
@@ -133,11 +170,24 @@ struct ContentView: View {
     }
     
     
+    // Greater than specified number of characters?
+    func isCorrectLength(word: String) -> Bool {
+        word.count >= wordLetterLimit
+    }
+    
+    
     // Changes the error messages to display appropriate details
     func wordError(title: String, message: String) {
         errorTitle = title
         errorMessage = message
         showingError = true
+    }
+    
+    
+    // Calculates user score (num created words * num letters used)
+    func calculateScore() {
+        if userScore == 0 { userScore += newWord.count }
+        else { userScore += usedWords.count * newWord.count }
     }
 
 }
