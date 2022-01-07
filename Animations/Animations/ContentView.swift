@@ -8,56 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
-    
-    @State private var animationAmount = 1.0
-    
+    @State private var animationAmount = 0.0
+
     var body: some View {
-        NavigationView {
-        
-            Button("Tap Me") {
-                // Increase size of button via scale effect and animationAmount var
-                // animationAmount += 1
+        Button("Tap Me") {
+            withAnimation(.interpolatingSpring(stiffness: 5, damping: 1)) {
+                animationAmount += 360
             }
-            .padding(50)
-            .background(.red)
-            .foregroundColor(.white)
-            .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .stroke(.red)
-                    .scaleEffect(animationAmount)
-                    .opacity(2 - animationAmount)
-                    .animation(
-                        .easeInOut(duration: 1)
-                            .repeatForever(autoreverses: false),
-                        value: animationAmount
-                    )
-                    .onAppear {
-                        animationAmount = 2
-                    }
-            )
-            
-            
-            // .animation(.easeOut, value: animationAmount)
-            // .animation(.easeInOut(duration: 2), value: animationAmount)
-//            .animation(
-//                .easeInOut(duration: 1)
-//                // AUTOREVERSES: creates 1sec animation to bounce up and down before reaching final size
-//                    .repeatCount(3, autoreverses: true),
-//                value: animationAmount
-//            )
-            
-            
-            // SPRING = Initial velocity on start; DAMPING = length of bounce time
-            // .animation(.interpolatingSpring(stiffness: 50, damping: 1), value: animationAmount)
-            
-            // Not part of instructions - Added to reset button size without rebuilding project
-//            .toolbar {
-//                Button("Reset Button Size") {
-//                    animationAmount = 1.0
-//                }
-//            }
         }
+        .padding(50)
+        .background(.red)
+        .foregroundColor(.white)
+        .clipShape(Circle())
+        .rotation3DEffect(.degrees(animationAmount), axis: (x: 1, y: 1, z: 0))
+
     }
 }
 
